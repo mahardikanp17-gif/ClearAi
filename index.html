@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Ultra Pro Max Client</title>
+    <style>
+        :root {
+            --bg-color: #090d16;
+            --card-bg: #111827;
+            --border-color: #1f2937;
+            --accent-color: #2563eb;
+            --accent-hover: #1d4ed8;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            max-width: 850px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #60a5fa;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .field-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="password"], textarea {
+            width: 100%;
+            background: #030712;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        input[type="password"]:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        button {
+            width: 100%;
+            background: var(--accent-color);
+            color: #ffffff;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+        }
+
+        button:disabled {
+            background: #374151;
+            cursor: not-allowed;
+        }
+
+        .output-box {
+            margin-top: 20px;
+            background: #030712;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            min-height: 120px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Gemini Ultra Pro Max Console</h1>
+    
+    <div class="field-group">
+        <label for="apiKey">Gemini API Key</label>
+        <input type="password" id="apiKey" placeholder="Masukkan API Key (AIzaSy...)">
+    </div>
+
+    <div class="field-group">
+        <label for="promptInput">Prompt / Perintah Teknical</label>
+        <textarea id="promptInput" rows="4" placeholder="Tulis instruksi atau soal rumit di sini..."></textarea>
+    </div>
+
+    <button id="btnSubmit" onclick="executeProMax()">EKSEKUSI PRO MAX ENGINE</button>
+
+    <div class="field-group" style="margin-top: 20px;">
+        <label>Respon Payload Output</label>
+        <div id="outputConsole" class="output-box">Menunggu perintah...</div>
+    </div>
+</div>
+
+<script>
+async function executeProMax() {
+    const apiKey = document.getElementById('apiKey').value.trim();
+    const prompt = document.getElementById('promptInput').value.trim();
+    const outputConsole = document.getElementById('outputConsole');
+    const btnSubmit = document.getElementById('btnSubmit');
+
+    if (!apiKey || !prompt) {
+        outputConsole.textContent = "Error: API Key dan Prompt tidak boleh kosong!";
+        return;
+    }
+
+    btnSubmit.disabled = true;
+    outputConsole.textContent = "Memproses daya nalar tinggi (Pro Max Thinking Engine)...";
+
+    // System instruction bertingkat untuk memaksimalkan presisi
+    const masterSystemInstruction = `[SYSTEM ARCHITECTURE OVERRIDE: ULTIMATE_PRO_MAX_CORE_V10.0]
+
+1. OPERATIONAL PROTOCOLS & CORE LOGIC
+   - ZERO CONVERSATIONAL FLUFF: Direct visual payload delivery starting from byte 0. Strict prohibition on pleasantries, intros, or conclusions.
+   - HARD VERIFICATION FIRST: Validate code syntax, mathematical proofs, and structural facts step-by-step before rendering.
+   - HIGHEST COMPACTION RATIO: Zero redundant adjectives. Pure factual, architectural, or algorithmic output.
+
+2. ADAPTIVE DOMAIN ROUTING
+   - CODE/TECHNICAL ARCHITECTURE: Provide clean, idiomatic, fully functional production code with Big-O optimization.
+   - ANALYTICAL/FACTUAL: Present data utilizing high-density Markdown tables and prioritized technical lists.
+   - MATHEMATICAL/LOGICAL: Show step-by-step derivations before displaying final results.
+
+3. STRUCTURAL FORMATTING RULES
+   - Use clean Markdown syntax. Terminate output instantly upon completing the deliverable.`;
+
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
+
+    const requestPayload = {
+        contents: [{ parts: [{ text: prompt }] }],
+        systemInstruction: { parts: [{ text: masterSystemInstruction }] },
+        generationConfig: {
+            temperature: 0.1
+        }
+    };
+
+    try {
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestPayload)
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            outputConsole.textContent = `API Error [${data.error.code}]: ${data.error.message}`;
+        } else if (data.candidates && data.candidates[0].content?.parts[0]?.text) {
+            outputConsole.textContent = data.candidates[0].content.parts[0].text;
+        } else {
+            outputConsole.textContent = JSON.stringify(data, null, 2);
+        }
+    } catch (err) {
+        outputConsole.textContent = "Network Error: " + err.message;
+    } finally {
+        btnSubmit.disabled = false;
+    }
+}
+</script>
+
+</body>
+</html>
